@@ -38,7 +38,7 @@
             -webkit-user-drag: none;
         }
         .active {
-            transform: scale(0.93);
+            transform: scale(0.9); /* 縮小幅度稍微加大，更有彈性感 */
         }
     </style>
 </head>
@@ -50,7 +50,7 @@
         <img id="cat-img" src="closed.png" alt="cat">
     </div>
 
-    <audio id="pop-sound" src="pop.mp3" preload="auto"></audio>
+    <audio id="pop-sound" src="pop.mp3" preload="auto" playsinline></audio>
 
     <script>
         const catImg = document.getElementById('cat-img');
@@ -61,19 +61,26 @@
         counterDisplay.innerText = count;
 
         function pop() {
-            count++;
-            counterDisplay.innerText = count;
+            // 1. 立即換圖（視覺最快）
             catImg.src = 'open.png';
             catImg.classList.add('active');
 
-            // 播放聲音的保險邏輯
-            if (popSound) {
-                popSound.pause(); // 先停止上一次的聲音
-                popSound.currentTime = 0; // 回到開頭
-                popSound.play().catch(e => console.log("播放失敗，請檢查檔案格式"));
-            }
-
+            // 2. 增加計數
+            count++;
+            counterDisplay.innerText = count;
             localStorage.setItem('popCount', count);
+
+            // 3. 播放聲音
+            if (popSound) {
+                popSound.currentTime = 0;
+                // 處理瀏覽器權限問題
+                let playPromise = popSound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log("等待使用者初次點擊激活聲音");
+                    });
+                }
+            }
         }
 
         function unpop() {
@@ -81,11 +88,25 @@
             catImg.classList.remove('active');
         }
 
-        // 滑鼠與觸控事件
+        // 滑鼠事件
         catImg.addEventListener('mousedown', (e) => { e.preventDefault(); pop(); });
         catImg.addEventListener('mouseup', (e) => { e.preventDefault(); unpop(); });
-        catImg.addEventListener('touchstart', (e) => { e.preventDefault(); pop(); });
-        catImg.addEventListener('touchend', (e) => { e.preventDefault(); unpop(); });
+
+        // 手機事件
+        catImg.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            pop();
+        });
+        catImg.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            unpop();
+        });
+
+        // 關鍵：為了保險，點擊網頁任何地方都先嘗試啟動音訊引擎
+        document.addEventListener('click', () => {
+            popSound.load(); 
+        }, { once: true });
     </script>
 </body>
 </html>
+

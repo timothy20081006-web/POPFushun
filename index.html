@@ -54,6 +54,22 @@
     </div>
 
     <script>
+        // 預先載入音效
+        const popAudio = new Audio('pop.mp3');
+
+        function pop() {
+            count++;
+            counterDisplay.innerText = count;
+            catImg.src = imgOpen;
+            
+            // 播放音效
+            popAudio.currentTime = 0; // 每次點擊都重置時間，這樣連點才會有聲音
+            popAudio.play();
+            
+            // 儲存進度
+            localStorage.setItem('popCount', count);
+        }
+        
         const catImg = document.getElementById('cat-img');
         const counterDisplay = document.getElementById('counter');
 
@@ -93,4 +109,5 @@
         });
     </script>
 </body>
+
 </html>

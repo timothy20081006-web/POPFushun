@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的自製 POPCAT</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>POPFushun</title>
     <style>
         body {
             margin: 0;
@@ -12,12 +12,11 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background-color: #b5dbff; /* 背景顏色可自行修改 */
+            background-color: #b5dbff;
             font-family: 'Arial Black', sans-serif;
             overflow: hidden;
-            touch-action: manipulation; /* 防止手機點擊縮放 */
+            touch-action: manipulation;
         }
-
         #counter {
             font-size: 80px;
             color: white;
@@ -25,23 +24,21 @@
             margin-bottom: 20px;
             user-select: none;
         }
-
         .cat-container {
-            position: relative;
             width: 80%;
             max-width: 500px;
+            display: flex;
+            justify-content: center;
         }
-
         #cat-img {
             width: 100%;
+            height: auto;
             cursor: pointer;
             transition: transform 0.05s;
-            -webkit-user-drag: none; /* 防止圖片被拖動 */
+            -webkit-user-drag: none;
         }
-
-        /* 點擊時輕微縮小的動感 */
-        #cat-img:active {
-            transform: scale(0.95);
+        .active {
+            transform: scale(0.93);
         }
     </style>
 </head>
@@ -53,44 +50,42 @@
         <img id="cat-img" src="closed.png" alt="cat">
     </div>
 
+    <audio id="pop-sound" src="pop.mp3" preload="auto"></audio>
+
     <script>
         const catImg = document.getElementById('cat-img');
         const counterDisplay = document.getElementById('counter');
+        const popSound = document.getElementById('pop-sound');
 
-        // 圖片路徑配置
-        const imgClosed = 'closed.png';
-        const imgOpen = 'open.png';
-
-        // 從瀏覽器讀取舊的計數，如果沒有就從 0 開始
-        let count = localStorage.getItem('popCount') || 0;
+        let count = parseInt(localStorage.getItem('popCount')) || 0;
         counterDisplay.innerText = count;
 
         function pop() {
             count++;
             counterDisplay.innerText = count;
-            catImg.src = imgOpen;
-            
-            // 儲存進度到瀏覽器
+            catImg.src = 'open.png';
+            catImg.classList.add('active');
+
+            // 播放聲音的保險邏輯
+            if (popSound) {
+                popSound.pause(); // 先停止上一次的聲音
+                popSound.currentTime = 0; // 回到開頭
+                popSound.play().catch(e => console.log("播放失敗，請檢查檔案格式"));
+            }
+
             localStorage.setItem('popCount', count);
         }
 
         function unpop() {
-            catImg.src = imgClosed;
+            catImg.src = 'closed.png';
+            catImg.classList.remove('active');
         }
 
-        // 滑鼠事件
-        catImg.addEventListener('mousedown', pop);
-        catImg.addEventListener('mouseup', unpop);
-
-        // 手機觸控事件
-        catImg.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // 防止長按彈出選單
-            pop();
-        });
-        catImg.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            unpop();
-        });
+        // 滑鼠與觸控事件
+        catImg.addEventListener('mousedown', (e) => { e.preventDefault(); pop(); });
+        catImg.addEventListener('mouseup', (e) => { e.preventDefault(); unpop(); });
+        catImg.addEventListener('touchstart', (e) => { e.preventDefault(); pop(); });
+        catImg.addEventListener('touchend', (e) => { e.preventDefault(); unpop(); });
     </script>
 </body>
 </html>

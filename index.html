@@ -2,8 +2,8 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POPCAT 自製版</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的自製 POPCAT</title>
     <style>
         body {
             margin: 0;
@@ -12,10 +12,10 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            background-color: #b5dbff;
+            background-color: #b5dbff; /* 背景顏色可自行修改 */
             font-family: 'Arial Black', sans-serif;
             overflow: hidden;
-            touch-action: manipulation;
+            touch-action: manipulation; /* 防止手機點擊縮放 */
         }
 
         #counter {
@@ -27,6 +27,7 @@
         }
 
         .cat-container {
+            position: relative;
             width: 80%;
             max-width: 500px;
         }
@@ -35,12 +36,12 @@
             width: 100%;
             cursor: pointer;
             transition: transform 0.05s;
-            -webkit-user-drag: none;
+            -webkit-user-drag: none; /* 防止圖片被拖動 */
         }
 
-        /* 點擊時的縮放效果 */
-        .pop-active {
-            transform: scale(0.9);
+        /* 點擊時輕微縮小的動感 */
+        #cat-img:active {
+            transform: scale(0.95);
         }
     </style>
 </head>
@@ -52,44 +53,38 @@
         <img id="cat-img" src="closed.png" alt="cat">
     </div>
 
-    <audio id="pop-sound" src="pop.mp3" preload="auto"></audio>
-
     <script>
         const catImg = document.getElementById('cat-img');
         const counterDisplay = document.getElementById('counter');
-        const popSound = document.getElementById('pop-sound');
 
-        let count = parseInt(localStorage.getItem('popCount')) || 0;
-        counterDisplay.innerText = count;
-
+        // 圖片路徑配置
         const imgClosed = 'closed.png';
         const imgOpen = 'open.png';
+
+        // 從瀏覽器讀取舊的計數，如果沒有就從 0 開始
+        let count = localStorage.getItem('popCount') || 0;
+        counterDisplay.innerText = count;
 
         function pop() {
             count++;
             counterDisplay.innerText = count;
             catImg.src = imgOpen;
-            catImg.classList.add('pop-active');
-
-            // 播放音效：關鍵在於先重置時間，這樣連點才會有連續的聲音
-            popSound.currentTime = 0;
-            popSound.play();
-
+            
+            // 儲存進度到瀏覽器
             localStorage.setItem('popCount', count);
         }
 
         function unpop() {
             catImg.src = imgClosed;
-            catImg.classList.remove('pop-active');
         }
 
         // 滑鼠事件
-        catImg.addEventListener('mousedown', (e) => { pop(); });
-        catImg.addEventListener('mouseup', (e) => { unpop(); });
+        catImg.addEventListener('mousedown', pop);
+        catImg.addEventListener('mouseup', unpop);
 
-        // 手機觸控事件 (解決延遲並防止縮放)
+        // 手機觸控事件
         catImg.addEventListener('touchstart', (e) => {
-            e.preventDefault();
+            e.preventDefault(); // 防止長按彈出選單
             pop();
         });
         catImg.addEventListener('touchend', (e) => {
